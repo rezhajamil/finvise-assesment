@@ -17,21 +17,11 @@ jobs:
           php-version: "8.3"
           extensions: mbstring, xml, curl, gd, intl, mysqlnd, pdo, zip
 
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader
+      - name: Install Node dependencies
+        run: npm install
 
-      - name: Generate application key
-        run: php artisan key:generate
-
-      - name: Run database migrations
-        run: php artisan migrate --force
-
-      - name: Clear cache
-        run: |
-          php artisan cache:clear
-          php artisan config:clear
-          php artisan route:clear
-          php artisan view:clear
+      - name: Build assets
+        run: npm run build
 
       - name: Deploy to EC2
         uses: appleboy/scp-action@v1
@@ -40,7 +30,7 @@ jobs:
           username: deploy
           key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           source: .
-          target: /var/www/finvise-assesment # /var/www/finvise-assesment
+          target: /var/webapps/finvise-assesment
 
       - name: Execute deployment script
         uses: appleboy/ssh-action@v1
@@ -49,10 +39,10 @@ jobs:
           username: deploy
           key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           script: |
-            cd /var/www/finvise-assesment
-            composer install
-            npm run build
+            cd /var/webapps/finvise-assesment
+            composer install --no-dev --optimize-autoloader
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+            php artisan migrate --force
