@@ -34,7 +34,7 @@ jobs:
           php artisan view:clear
 
       - name: Deploy to EC2
-        uses: appleboy/scp@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: 16.79.30.150
           username: deploy
@@ -43,7 +43,7 @@ jobs:
           target: /var/www/finvise-assesment # /var/www/finvise-assesment
 
       - name: Execute deployment script
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1
         with:
           host: 16.79.30.150
           username: deploy
