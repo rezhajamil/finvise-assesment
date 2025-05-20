@@ -24,11 +24,17 @@ jobs:
       - name: Build assets locally
         run: npm run build
 
+      - name: Save SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
       - name: Sync files to EC2 with rsync
         run: |
           rsync -avz --exclude='.env' --exclude='storage' --exclude='vendor' --delete ./ deploy@16.79.30.150:/var/webapps/finvise-assesment/
         env:
-          RSYNC_RSH: "ssh -i ${{ secrets.DEPLOY_PRIVATE_KEY }} -o StrictHostKeyChecking=no"
+          RSYNC_RSH: "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
 
       - name: Finalize deployment on EC2
         uses: appleboy/ssh-action@v1
