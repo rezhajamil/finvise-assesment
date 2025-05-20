@@ -3,6 +3,7 @@ name: Deploy to AWS EC2
 on:
   push:
     branches: ["main"]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,26 +21,22 @@ jobs:
       - name: Install Node dependencies
         run: npm install
 
-      - name: Build assets
+      - name: Build assets locally
         run: npm run build
 
-      - name: Deploy to EC2
-        uses: appleboy/scp-action@v1
-        with:
-          host: 16.79.30.150
-          username: deploy
-          key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-          source: .
-          target: /var/webapps/finvise-assesment
+      - name: Sync files to EC2 with rsync
+        run: |
+          rsync -avz --exclude='.env' --exclude='storage' --exclude='vendor' --delete ./ deploy@16.79.30.150:/var/webapps/finvise-assesment/
+        env:
+          RSYNC_RSH: "ssh -i ${{ secrets.DEPLOY_PRIVATE_KEY }} -o StrictHostKeyChecking=no"
 
-      - name: Execute deployment script
+      - name: Finalize deployment on EC2
         uses: appleboy/ssh-action@v1
         with:
           host: 16.79.30.150
           username: deploy
           key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           script: |
-            rsync -avz --exclude=".env" --exclude="storage" --exclude="vendor" ./ /var/webapps/finvise-assesment
             cd /var/webapps/finvise-assesment
             composer install --no-dev --optimize-autoloader
             npm install
