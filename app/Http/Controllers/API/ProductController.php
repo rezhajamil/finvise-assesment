@@ -15,9 +15,15 @@ class ProductController extends Controller
             'price_max' => 'nullable|numeric|min:0',
             'sort_by' => 'nullable|in:name,price',
             'sort_order' => 'nullable|in:asc,desc',
+            'search' => 'nullable|string|max:255',
         ]);
 
         $query = Product::query();
+
+        // Search by name
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
 
         // Filter: Price Range
         if ($request->has('price_min')) {
