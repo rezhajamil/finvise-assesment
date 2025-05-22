@@ -11,8 +11,8 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'price_min' => 'nullable|numeric|min:0',
-            'price_max' => 'nullable|numeric|min:0',
+            'price_min' => 'nullable|numeric|min:0|required_with:price_min',
+            'price_max' => 'nullable|numeric|min:0|required_with:price_max',
             'sort_by' => 'nullable|in:name,price',
             'sort_order' => 'nullable|in:asc,desc',
             'search' => 'nullable|string|max:255',
@@ -26,11 +26,11 @@ class ProductController extends Controller
         }
 
         // Filter: Price Range
-        if ($request->has('price_min')) {
+        if ($request->filled('price_min')) {
             $query->where('price', '>=', $request->price_min);
         }
 
-        if ($request->has('price_max')) {
+        if ($request->filled('price_max')) {
             $query->where('price', '<=', $request->price_max);
         }
 
