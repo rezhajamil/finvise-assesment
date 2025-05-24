@@ -16,6 +16,7 @@ class ProductController extends Controller
             'sort_by' => 'nullable|in:name,price',
             'sort_order' => 'nullable|in:asc,desc',
             'search' => 'nullable|string|max:255',
+            'limit' => 'nullable|integer|min:1|max:100',
         ]);
 
         $query = Product::query();
@@ -38,6 +39,11 @@ class ProductController extends Controller
         if ($request->has('sort_by') && in_array($request->sort_by, ['name', 'price'])) {
             $sortOrder = $request->get('sort_order', 'asc');
             $query->orderBy($request->sort_by, $sortOrder);
+        }
+
+        // Apply limit only if it's provided
+        if ($request->filled('limit')) {
+            $query->limit($request->limit);
         }
 
         return response()->json($query->get());
